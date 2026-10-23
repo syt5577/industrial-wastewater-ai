@@ -25,7 +25,8 @@ for rank,item, in enumerate(result,start=1):
           round(item['score'],4))
 embedding = OpenAIEmbeddings(api_key=api_key,
                              model="BAAI/bge-m3",
-                             base_url="https://api.siliconflow.cn/v1"
+                             base_url="https://api.siliconflow.cn/v1",
+                             check_embedding_ctx_length=False
                              )
 vectorstore = build_faiss(documents, embedding)
 faiss_result = faiss_search(query, vectorstore, k=10)
