@@ -15,13 +15,13 @@ def hit_at_k(retrieved_results, relevant_chunk_ids, k=3):
     #    存在于 relevant_chunk_ids 中
     # 4. 命中返回 1，否则返回 0
     top_retrieved_results = retrieved_results[:k]
-    top_relevant_chunk_ids = [
+    top_retrieved_chunk_ids = [
         item['document'].metadata['chunk_id']
         for item in top_retrieved_results
     ]
     hit = any(
         chunk_id in relevant_chunk_ids
-        for chunk_id in top_relevant_chunk_ids
+        for chunk_id in top_retrieved_chunk_ids
     )
     return int(hit)
 
