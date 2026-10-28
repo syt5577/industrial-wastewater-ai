@@ -1,3 +1,5 @@
+from langchain_community.vectorstores import FAISS
+
 from src.loader import load_documents
 from src.retrieval import build_bm25,bm25_search,build_faiss,faiss_search
 from src.fusion import rrf_fusion
@@ -23,12 +25,23 @@ def initial_rag():
                                  base_url="https://api.siliconflow.cn/v1",
                                  check_embedding_ctx_length=False
                                  )
-    vectorstore = build_faiss(documnts, embedding)
+    index_path = Path(__file__).resolve().parent/'data'/'faiss_index'
+    if (index_path/'index.faiss').exists() and (index_path/'index.pkl').exists():
+        print('发现Faiss索引')
+        vectorstore = FAISS.load_local(str(index_path),
+                                 embeddings=embedding,
+                                 allow_dangerous_deserialization=True)
+
+    else:
+        print('未发现索引，需重构')
+        vectorstore = build_faiss(documnts, embedding)
+        vectorstore.save_local(str(index_path))
     llm = ChatOpenAI(
         model="deepseek-ai/DeepSeek-V4.1-Flash",
         base_url="https://api.siliconflow.cn/v1",
         api_key=api_key,
         temperature=0)
+    print(f'FAISS对象类型：{type(vectorstore)}')
     return bm25, vectorstore, documnts,llm
 def rag_answer(query,bm25,vectore,documnts,llm):
     bm25_results = bm25_search(query=query, bm25=bm25, documents=documnts, k=10)
