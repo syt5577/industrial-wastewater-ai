@@ -1,4 +1,4 @@
-def rrf_fusion(bm25_results, faiss_results, k=60):
+def rrf_fusion(bm25_results, faiss_results, k=60,top_k = None):
     rrf_scores = {}
     documents = {}
     for result in [bm25_results, faiss_results]:
@@ -8,7 +8,7 @@ def rrf_fusion(bm25_results, faiss_results, k=60):
             documents[chunk_id] = item["document"]
     sorted_rrf_scores = sorted(rrf_scores,
                         key= lambda chunk_id: rrf_scores[chunk_id],
-                        reverse=True)
+                        reverse=True)[:top_k]
     return [
          {"document":documents[chunk_id],
          "score":rrf_scores[chunk_id]}
