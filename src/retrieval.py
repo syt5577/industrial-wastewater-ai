@@ -1,20 +1,12 @@
 import jieba
 from rank_bm25 import BM25Okapi
 from langchain_community.vectorstores import FAISS
+from langchain_core.documents import Document
 def build_bm25(documents):
     tokenizer_corpus = [list(jieba.cut(doc.page_content)) for doc in documents]
     bm25 = BM25Okapi(tokenizer_corpus)
     return bm25
 def bm25_search(query, bm25, documents, k=5):
-    # 1. 对 query 进行 jieba 分词
-
-    # 2. 使用 bm25.get_scores() 计算分数
-
-    # 3. 根据分数从高到低排序，取前 k 个索引
-
-    # 4. 根据索引从 documents 找回 Document
-
-    # 5. 返回包含 document 和 score 的字典列表
     query_tokens = list(jieba.cut(query))
     scores = bm25.get_scores(query_tokens)
     top_indices = sorted(
@@ -31,7 +23,21 @@ def bm25_search(query, bm25, documents, k=5):
             }
         )
     return result
+def build_retrieval_documents(documents):
+    retireval_doc = []
+    for doc in documents:
+        doc_section = doc.metadata.get('section')
+        doc_subsection = doc.metadata.get('subsection')
+        page_content = doc.page_content
+        doc_build_retrieval = f"Section: {doc_section}\nSubsection: {doc_subsection}\nContent: {page_content}"
+        new_doc = Document(
+            page_content=doc_build_retrieval,
+            metadata=doc.metadata)
+        retireval_doc.append(new_doc)
+    return retireval_doc
 def build_faiss(documents, embeddings):
+    retrieval_doc = build_retrieval_documents(documents)
+    documents = retrieval_doc
     vectorstore = FAISS.from_documents(
         documents=documents,
         embedding=embeddings
