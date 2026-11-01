@@ -1,15 +1,11 @@
+import os
+from langchain_openai import ChatOpenAI
+from src.retrieval import bm25_search,faiss_search
+from src.fusion import rrf_fusion
+from src.query_processing import rewrite_query
+
 def build_context(rrf_results, top_k=3):
     context_parts = []
-
-    # 1. 取 RRF 排名前 top_k 的结果
-
-    # 2. 遍历结果，获取 Document
-
-    # 3. 提取 metadata 中的 chunk_id
-
-    # 4. 将 chunk_id 和 page_content 拼成一段文本
-
-    # 5. 用 "\n\n---\n\n" 连接所有文本
     top_doc = rrf_results[:top_k]
     for item in top_doc:
         doc = item['document']
@@ -21,17 +17,7 @@ def build_context(rrf_results, top_k=3):
     context = '\n\n----------\n\n'.join(context_parts)
     return context
 def generate_answer(query, context, llm):
-    # 1. 构建 Prompt
-    # 要求 LLM：
-    # - 仅依据 context 回答
-    # - 如果资料不足，明确说明
-    # - 引用来源 chunk_id
 
-    # 2. 调用 LLM
-    # response = llm.invoke(...)
-
-    # 3. 提取回答文本
-    # return response.content
     prompt = f"""
     你是一名工业污水处理业务助手。
 
@@ -47,3 +33,12 @@ def generate_answer(query, context, llm):
     """
     response = llm.invoke(prompt)
     return response.content
+def rag_answer(llm,query,vectorestore,bm25,documents):
+    rewritten_query = rewrite_query(query,llm)
+    faiss_result=faiss_search(rewritten_query,vectorstore=vectorestore,k=5)
+    bm25_result = bm25_search(rewritten_query,bm25,documents,k=10)
+    rrf_result = rrf_fusion(bm25_result,faiss_result,top_k=10)
+    context = build_context(rrf_result,top_k=5)
+    answer = generate_answer(query,context,llm)
+    return answer
+

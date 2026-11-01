@@ -5,7 +5,7 @@ from src.fusion import rrf_fusion
 import os
 from dotenv import load_dotenv
 from langchain_openai import OpenAIEmbeddings
-from src.rag import build_context,generate_answer
+from src.rag import rag_answer
 from langchain_openai import ChatOpenAI
 from pathlib import Path
 from src.indexing import collect_file_metadata,generate_metadata_hash,save_manifest,load_manifest,is_index_valid
@@ -41,17 +41,13 @@ def initial_rag():
         temperature=0)
     print(f'FAISS对象类型：{type(vectorstore)}')
     return bm25, vectorstore, documnts,llm
-def rag_answer(query,bm25,vectore,documnts,llm):
-    bm25_results = bm25_search(query=query, bm25=bm25, documents=documnts, k=10)
-    faiss_results = faiss_search(query=query, vectorstore=vectore, k=10)
-    rrf_results = rrf_fusion(bm25_results, faiss_results)
-    context = build_context(rrf_results, top_k=5)
-    response = generate_answer(query, context, llm)
+def get_rag_answer(query,bm25,vectore,documnts,llm):
+    response = rag_answer(llm,query,vectore,bm25,documnts)
     return response
 if __name__ == "__main__":
     bm25, vectorstore, documnts, llm = initial_rag()
 
-    answer = rag_answer(
+    answer = get_rag_answer(
         "如何签订污水处理合同",
         bm25, vectorstore, documnts, llm
     )

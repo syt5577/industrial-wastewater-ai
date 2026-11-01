@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from main import initial_rag, rag_answer
+from main import initial_rag, get_rag_answer
 from contextlib import asynccontextmanager
 
 @asynccontextmanager
@@ -18,5 +18,5 @@ def ask(request: QuestionRequest):
     query = request.question
     return{
         'question':query,
-        'answer':rag_answer(query,bm25,vectorstore,documnts,llm)
+        'answer':get_rag_answer(query,bm25,vectorstore,documnts,llm)
     }

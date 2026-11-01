@@ -1,4 +1,4 @@
-def rrf_fusion(bm25_results, faiss_results, k=60,top_k = None,bm25_weight=0.8, faiss_weight=1.0):
+def rrf_fusion(bm25_results, faiss_results, k=60,top_k = None,bm25_weight=0.5, faiss_weight=1.0):
     rrf_scores = {}
     documents = {}
     for rank,item in enumerate(bm25_results,start=1):
