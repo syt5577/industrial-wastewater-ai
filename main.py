@@ -15,8 +15,8 @@ load_dotenv()
 api_key = os.getenv("SILICONFLOW_API_KEY")
 def initial_rag():
     path = Path(__file__).resolve().parent/'data'/'processed'
-    documnts = load_documents(path)
-    bm25 = build_bm25(documnts)
+    documents = load_documents(path)
+    bm25 = build_bm25(documents)
     embedding = OpenAIEmbeddings(api_key=api_key,
                                  model="BAAI/bge-m3",
                                  base_url="https://api.siliconflow.cn/v1",
@@ -30,7 +30,7 @@ def initial_rag():
         vectorstore = FAISS.load_local(str(index_path), embedding,allow_dangerous_deserialization=True)
     else:
         print("索引或hash无效，重新构建FAISS向量存储。")
-        vectorstore = build_faiss(documnts, embedding)
+        vectorstore = build_faiss(documents, embedding)
         vectorstore.save_local(str(index_path))
         save_manifest(index_path, current_hash)
     
@@ -40,7 +40,7 @@ def initial_rag():
         api_key=api_key,
         temperature=0)
     print(f'FAISS对象类型：{type(vectorstore)}')
-    return bm25, vectorstore, documnts,llm
+    return bm25, vectorstore, documents,llm
 def get_rag_answer(query,bm25,vectore,documnts,llm):
     response = rag_answer(llm,query,vectore,bm25,documnts)
     return response

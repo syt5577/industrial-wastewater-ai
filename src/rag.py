@@ -9,10 +9,11 @@ def build_context(rrf_results, top_k=3):
     top_doc = rrf_results[:top_k]
     for item in top_doc:
         doc = item['document']
-        chunk_id = doc.metadata['chunk_id']
+        chunk_id = doc.metadata.get('chunk_id','未知chunk')
+        source = doc.metadata.get('source','未知来源')
         content = doc.page_content
         context_parts.append(
-            f'来源：{chunk_id}\n内容：{content}'
+            f'来源：{source}|{chunk_id}\n内容：{content}'
         )
     context = '\n\n----------\n\n'.join(context_parts)
     return context
