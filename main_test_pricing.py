@@ -17,9 +17,12 @@ water_quality = {
 }
 
 base_cost = 8.93
-analyze_wastewater_price(
+result = analyze_wastewater_price(
     water_quality,
     history_df,
     limits,
     base_cost
 )
+print(result["rule_price"])
+print(result["max_indicator"])
+print(result["historical_cases"][0])
