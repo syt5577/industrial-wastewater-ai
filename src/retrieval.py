@@ -36,8 +36,6 @@ def build_retrieval_documents(documents):
         retireval_doc.append(new_doc)
     return retireval_doc
 def build_faiss(documents, embeddings):
-    retrieval_doc = build_retrieval_documents(documents)
-    documents = retrieval_doc
     vectorstore = FAISS.from_documents(
         documents=documents,
         embedding=embeddings
