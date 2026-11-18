@@ -104,4 +104,54 @@ def review_contract(
         results.append(result)
 
     return results
-        
+
+def export_contract_report(
+    results: list[ContractReviewResult],
+    output_path: str | Path,
+    contract_name: str
+) -> Path:
+
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    doc = Document()
+
+    doc.add_heading("合同审查报告", level=1)
+    doc.add_paragraph(f"合同名称：{contract_name}")
+    sum_question = sum(1 for result in results if result.status == '存在问题')
+    sum_ok = sum(1 for result in results if result.status == '符合要求')
+    sum_unknown = sum(1 for result in results if result.status == '无法判断')
+    doc.add_paragraph(f'存在问题的条款有{sum_question}项')
+    doc.add_paragraph(f'无法判断需要补充的条款有{sum_unknown}项')
+    doc.add_paragraph(f'不需要有修改的有{sum_ok}项')
+
+    for result in results:
+        doc.add_heading(result.rule_id, level=2)
+        doc.add_heading(result.status, level=3)
+        doc.add_paragraph(f'原文为：{result.evidence}')
+        doc.add_paragraph(f'发现的问题为：{result.issue}')
+        doc.add_paragraph(f'建议建议为：{result.suggestion}')
+    doc.save(output_path)
+    return output_path
+
+def run_contract_review(
+    contract_path: str | Path,
+    rules_path: str | Path,
+    output_path: str | Path,
+    structured_llm,
+    contract_name: str
+) -> Path:
+    contract_text = load_contract_docx(contract_path)
+    rules = load_contract_rules(rules_path)
+    results = review_contract(contract_text, rules, structured_llm)
+    report_path = export_contract_report(results, output_path, contract_name)
+    return report_path
+    # 第一步：读取合同文本
+
+    # 第二步：加载审查规则
+
+    # 第三步：执行 review_contract()
+
+    # 第四步：执行 export_contract_report()
+
+    # 第五步：返回报告路径
